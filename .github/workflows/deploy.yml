@@ -25,7 +25,7 @@ jobs:
       
     - name: Deploy to server
       env:
-        TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-        GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+        TELEGRAM_TOKEN: ${{ 7924129087:AAECLBXF9DuuTTMzAJP5JyPcJdYjpAmH4NE }}
+        GOOGLE_SHEET_ID: ${{ AIzaSyBBJOusSW5G9021VRHpDBU1viB_f3NiR00 }}
       run: |
         npm start &
