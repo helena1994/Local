@@ -80,6 +80,13 @@ Run tests with:
 python test_bot.py
 ```
 
+### Language Support
+
+**Note**: TextBlob sentiment analysis works best with English text. For Indonesian or other languages, consider using language-specific sentiment analysis libraries like:
+- `sastrawi` for Indonesian text processing
+- `polyglot` for multilingual sentiment analysis
+- Or translation services to convert to English first
+
 ### Security Notes
 
 ⚠️ **Important**: Never commit your Facebook credentials to version control. Use environment variables or secure configuration files for sensitive data.
