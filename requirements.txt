@@ -1,0 +1,27 @@
+# Python Messenger Bot Dependencies
+
+# Selenium for web automation
+selenium>=4.15.0
+
+# Text processing and sentiment analysis
+textblob>=0.17.1
+
+# Additional text processing (downloads with textblob)
+nltk>=3.8.1
+
+# Web driver management (optional, for easier driver setup)
+webdriver-manager>=4.0.1
+
+# Data handling and utilities
+requests>=2.31.0
+
+# Environment variable management
+python-dotenv>=1.0.0
+
+# Logging enhancements (optional)
+colorlog>=6.7.0
+
+# Development dependencies (optional)
+pytest>=7.4.0
+black>=23.0.0
+flake8>=6.0.0
