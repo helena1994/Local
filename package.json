@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "start": "node src/bot.js",
+    "start:messenger": "python3 run_bot.py",
+    "start:messenger:headless": "python3 run_bot.py --headless",
+    "test:messenger": "PYTHONPATH=src python3 test_messenger_bot.py",
+    "heroku-postbuild": "echo 'Post-build script'"
+  }
+}
