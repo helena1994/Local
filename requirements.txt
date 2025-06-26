@@ -1,0 +1,29 @@
+# Bot Messenger Otomatis - Requirements
+# Instalasi: pip install -r requirements.txt
+
+# Selenium untuk otomatisasi browser
+selenium==4.15.2
+
+# TextBlob untuk analisis sentimen
+textblob==0.17.1
+
+# WebDriver Manager untuk otomatis download ChromeDriver
+webdriver-manager==4.0.1
+
+# Additional libraries untuk text processing
+nltk==3.8.1
+
+# Database libraries (SQLite sudah built-in di Python)
+# Tidak perlu install tambahan untuk SQLite
+
+# Utilities
+python-dotenv==1.0.0
+requests==2.31.0
+
+# Development tools (opsional)
+pytest==7.4.3
+black==23.9.1
+flake8==6.1.0
+
+# Logging dan monitoring
+colorlog==6.7.0
