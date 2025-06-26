@@ -1,6 +1,0 @@
-{
-  "scripts": {
-    "start": "node src/bot.js",
-    "heroku-postbuild": "echo 'Post-build script'"
-  }
-}
