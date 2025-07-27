@@ -1,0 +1,36 @@
+[Unit]
+Description=Facebook Messenger Bot
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/messenger-bot
+ExecStart=/usr/bin/python3 run_bot.py --headless --daemon
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=messenger-bot
+
+# Environment variables
+Environment=PYTHONPATH=/opt/messenger-bot/src
+Environment=HEADLESS_MODE=true
+Environment=DAEMON_MODE=true
+
+# Security settings
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/opt/messenger-bot/logs
+ReadWritePaths=/tmp
+
+# Resource limits
+MemoryLimit=1G
+CPUQuota=50%
+
+[Install]
+WantedBy=multi-user.target
