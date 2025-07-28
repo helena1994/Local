@@ -24,6 +24,12 @@ class Config:
     IMPLICIT_WAIT = int(os.getenv('IMPLICIT_WAIT', '10'))
     PAGE_LOAD_TIMEOUT = int(os.getenv('PAGE_LOAD_TIMEOUT', '30'))
     
+    # VPS/Daemon settings
+    DAEMON_MODE = os.getenv('DAEMON_MODE', 'False').lower() == 'true'
+    CHECK_INTERVAL = int(os.getenv('CHECK_INTERVAL', '300'))  # 5 minutes default
+    MAX_RETRIES = int(os.getenv('MAX_RETRIES', '3'))
+    RETRY_DELAY = int(os.getenv('RETRY_DELAY', '60'))  # 1 minute default
+    
     # URLs
     FACEBOOK_URL = 'https://www.facebook.com'
     MESSENGER_URL = 'https://www.messenger.com'

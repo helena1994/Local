@@ -1,9 +1,13 @@
 """
 Facebook Messenger Bot using Selenium
 Automatically logs into Facebook, reads unread messages, and replies with predetermined text.
+Supports both single-run and daemon modes for VPS deployment.
 """
 import time
 import logging
+import json
+import os
+from datetime import datetime
 from typing import List, Optional
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -35,11 +39,18 @@ class MessengerBot:
         
     def _setup_logging(self) -> logging.Logger:
         """Setup logging configuration"""
+        # Ensure logs directory exists
+        log_dir = 'logs'
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir, exist_ok=True)
+            
+        log_file = os.path.join(log_dir, 'messenger_bot.log')
+        
         logging.basicConfig(
             level=logging.INFO,
             format='%(asctime)s - %(levelname)s - %(message)s',
             handlers=[
-                logging.FileHandler('messenger_bot.log'),
+                logging.FileHandler(log_file),
                 logging.StreamHandler()
             ]
         )
@@ -50,12 +61,23 @@ class MessengerBot:
         try:
             chrome_options = Options()
             
-            # Add Chrome options for stability
+            # Add Chrome options for stability and VPS compatibility
             chrome_options.add_argument('--no-sandbox')
             chrome_options.add_argument('--disable-dev-shm-usage')
             chrome_options.add_argument('--disable-gpu')
+            chrome_options.add_argument('--disable-extensions')
+            chrome_options.add_argument('--disable-plugins')
+            chrome_options.add_argument('--disable-images')  # Save bandwidth
+            chrome_options.add_argument('--disable-javascript')  # For initial page loads
             chrome_options.add_argument('--window-size=1920,1080')
-            chrome_options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36')
+            chrome_options.add_argument('--user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36')
+            
+            # VPS-specific optimizations
+            chrome_options.add_argument('--memory-pressure-off')
+            chrome_options.add_argument('--max_old_space_size=4096')
+            chrome_options.add_argument('--disable-background-timer-throttling')
+            chrome_options.add_argument('--disable-renderer-backgrounding')
+            chrome_options.add_argument('--disable-backgrounding-occluded-windows')
             
             if Config.HEADLESS_MODE:
                 chrome_options.add_argument('--headless')
@@ -276,11 +298,28 @@ class MessengerBot:
         except Exception as e:
             self.logger.error(f"Error replying to conversation: {str(e)}")
             return False
-            
-    def run_bot(self) -> None:
-        """Main bot execution loop"""
+    
+    def update_heartbeat(self) -> None:
+        """Update heartbeat for health monitoring"""
         try:
-            self.logger.info("Starting Facebook Messenger Bot...")
+            status_file = 'logs/bot_status.json'
+            status = {
+                'status': 'running',
+                'last_heartbeat': datetime.now().isoformat(),
+                'last_run': datetime.now().isoformat()
+            }
+            
+            with open(status_file, 'w') as f:
+                json.dump(status, f)
+                
+        except Exception as e:
+            self.logger.error(f"Failed to update heartbeat: {str(e)}")
+    
+    def run_single_cycle(self) -> bool:
+        """Run a single bot cycle (login, check messages, reply)"""
+        try:
+            self.logger.info("Starting bot cycle...")
+            self.update_heartbeat()
             
             # Setup WebDriver
             self._setup_driver()
@@ -288,19 +327,19 @@ class MessengerBot:
             # Login to Facebook
             if not self.login_to_facebook():
                 self.logger.error("Failed to login to Facebook")
-                return
+                return False
                 
             # Navigate to Messenger
             if not self.navigate_to_messenger():
                 self.logger.error("Failed to navigate to Messenger")
-                return
+                return False
                 
             # Get unread conversations
             unread_conversations = self.get_unread_conversations()
             
             if not unread_conversations:
                 self.logger.info("No unread conversations found")
-                return
+                return True
                 
             # Reply to each unread conversation
             replies_sent = 0
@@ -309,12 +348,63 @@ class MessengerBot:
                     replies_sent += 1
                     time.sleep(2)  # Wait between replies to avoid being flagged
                     
-            self.logger.info(f"Bot completed. Sent {replies_sent} replies out of {len(unread_conversations)} unread conversations")
+            self.logger.info(f"Cycle completed. Sent {replies_sent} replies out of {len(unread_conversations)} unread conversations")
+            self.update_heartbeat()
+            return True
             
         except Exception as e:
-            self.logger.error(f"Unexpected error in bot execution: {str(e)}")
+            self.logger.error(f"Error in bot cycle: {str(e)}")
+            return False
         finally:
             self.cleanup()
+    
+    def run_daemon(self) -> None:
+        """Run bot in daemon mode with continuous monitoring"""
+        self.logger.info("Starting Facebook Messenger Bot in daemon mode...")
+        self.logger.info(f"Check interval: {Config.CHECK_INTERVAL} seconds")
+        
+        retry_count = 0
+        
+        while True:
+            try:
+                success = self.run_single_cycle()
+                
+                if success:
+                    retry_count = 0  # Reset retry count on success
+                    self.logger.info(f"Cycle successful. Waiting {Config.CHECK_INTERVAL} seconds...")
+                else:
+                    retry_count += 1
+                    self.logger.warning(f"Cycle failed. Retry {retry_count}/{Config.MAX_RETRIES}")
+                    
+                    if retry_count >= Config.MAX_RETRIES:
+                        self.logger.error(f"Max retries ({Config.MAX_RETRIES}) reached. Waiting {Config.RETRY_DELAY} seconds before next attempt...")
+                        time.sleep(Config.RETRY_DELAY)
+                        retry_count = 0  # Reset retry count after delay
+                        continue
+                
+                # Wait for next check
+                time.sleep(Config.CHECK_INTERVAL)
+                
+            except KeyboardInterrupt:
+                self.logger.info("Daemon mode stopped by user (Ctrl+C)")
+                break
+            except Exception as e:
+                self.logger.error(f"Unexpected error in daemon mode: {str(e)}")
+                retry_count += 1
+                
+                if retry_count >= Config.MAX_RETRIES:
+                    self.logger.error(f"Max retries reached. Waiting {Config.RETRY_DELAY} seconds...")
+                    time.sleep(Config.RETRY_DELAY)
+                    retry_count = 0
+                else:
+                    time.sleep(10)  # Short delay before retry
+            
+    def run_bot(self) -> None:
+        """Main bot execution - supports both single run and daemon mode"""
+        if Config.DAEMON_MODE:
+            self.run_daemon()
+        else:
+            self.run_single_cycle()
             
     def cleanup(self) -> None:
         """Clean up resources"""

@@ -3,7 +3,14 @@
     "start": "node src/bot.js",
     "start:messenger": "python3 run_bot.py",
     "start:messenger:headless": "python3 run_bot.py --headless",
+    "start:messenger:daemon": "python3 run_bot.py --headless --daemon",
     "test:messenger": "PYTHONPATH=src python3 test_messenger_bot.py",
+    "health-check": "python3 health_check.py",
+    "install:vps": "./install_vps.sh",
+    "docker:build": "docker build -t messenger-bot .",
+    "docker:run": "docker-compose up -d",
+    "docker:logs": "docker-compose logs -f",
+    "docker:stop": "docker-compose down",
     "heroku-postbuild": "echo 'Post-build script'"
   }
 }
