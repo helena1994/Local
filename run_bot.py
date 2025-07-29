@@ -43,8 +43,10 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python run_bot.py                    # Run bot normally
+  python run_bot.py                    # Run bot once
   python run_bot.py --headless         # Run bot in headless mode
+  python run_bot.py --daemon           # Run bot in continuous daemon mode
+  python run_bot.py --daemon --interval 600  # Daemon mode, check every 10 minutes
   python run_bot.py --check-config     # Check configuration only
   
 Environment variables required:
@@ -64,6 +66,19 @@ Environment variables required:
         '--check-config',
         action='store_true',
         help='Check configuration and exit'
+    )
+    
+    parser.add_argument(
+        '--daemon',
+        action='store_true',
+        help='Run bot in daemon mode (continuous monitoring)'
+    )
+    
+    parser.add_argument(
+        '--interval',
+        type=int,
+        default=300,
+        help='Check interval in daemon mode (seconds, default: 300)'
     )
     
     parser.add_argument(
@@ -92,13 +107,20 @@ Environment variables required:
     # Override environment settings with command line args
     if args.headless:
         os.environ['HEADLESS_MODE'] = 'True'
+    if args.daemon:
+        os.environ['DAEMON_MODE'] = 'True'
+    if args.interval != 300:
+        os.environ['CHECK_INTERVAL'] = str(args.interval)
     if args.timeout != 10:
         os.environ['IMPLICIT_WAIT'] = str(args.timeout)
         
     print("🚀 Starting bot...")
     print(f"📧 Using email: {Config.FACEBOOK_EMAIL}")
     print(f"🖥️  Headless mode: {args.headless or Config.HEADLESS_MODE}")
-    print(f"⏰ Timeout: {args.timeout} seconds")
+    print(f"🤖 Daemon mode: {args.daemon or Config.DAEMON_MODE}")
+    if args.daemon or Config.DAEMON_MODE:
+        print(f"⏰ Check interval: {args.interval} seconds")
+    print(f"⏱️  Timeout: {args.timeout} seconds")
     print("-" * 50)
     
     try:

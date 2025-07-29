@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  messenger-bot:
+    build: .
+    container_name: facebook-messenger-bot
+    restart: unless-stopped
+    environment:
+      - FACEBOOK_EMAIL=${FACEBOOK_EMAIL}
+      - FACEBOOK_PASSWORD=${FACEBOOK_PASSWORD}
+      - AUTO_REPLY_MESSAGE=${AUTO_REPLY_MESSAGE:-Terima kasih atas pesan Anda! Saya akan membalas sesegera mungkin.}
+      - HEADLESS_MODE=true
+      - IMPLICIT_WAIT=10
+      - PAGE_LOAD_TIMEOUT=30
+      - DAEMON_MODE=true
+      - CHECK_INTERVAL=300
+    volumes:
+      - ./logs:/app/logs
+      - /dev/shm:/dev/shm  # Shared memory for Chrome
+    env_file:
+      - .env
+    networks:
+      - bot-network
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
+
+networks:
+  bot-network:
+    driver: bridge

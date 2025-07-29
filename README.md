@@ -104,15 +104,19 @@ npm run check:proxy                 # Check configuration
 
 #### Menjalankan Bot Messenger
 
+**Lokal (satu kali):**
 ```bash
 cd src
 python3 messenger_bot.py
 ```
-
 ##### Atau menggunakan wrapper script
 ```bash
 python3 run_bot.py
 python3 run_bot.py --headless       # Headless mode
+=======
+**VPS (mode daemon):**
+```bash
+python3 run_bot.py --headless --daemon
 ```
 
 #### Menjalankan Bot Telegram (Existing)
@@ -120,6 +124,29 @@ python3 run_bot.py --headless       # Headless mode
 ```bash
 npm start
 ```
+
+### Deployment VPS
+
+Untuk deployment di VPS (Virtual Private Server), gunakan salah satu metode berikut:
+
+#### 🚀 Quick Install (Recommended)
+```bash
+git clone <repository-url>
+cd Local
+chmod +x install_vps.sh
+./install_vps.sh
+```
+
+#### 🐳 Docker Deployment
+```bash
+git clone <repository-url>
+cd Local
+cp .env.example .env
+# Edit .env dengan kredensial Anda
+docker-compose up -d
+```
+
+**Lihat panduan lengkap:** [VPS_DEPLOYMENT.md](VPS_DEPLOYMENT.md)
 
 ### Konfigurasi Environment Variables
 
@@ -131,6 +158,8 @@ npm start
 | `FACEBOOK_PASSWORD` | Password Facebook | - | ✅ |
 | `AUTO_REPLY_MESSAGE` | Pesan balasan otomatis | "Terima kasih..." | ❌ |
 | `HEADLESS_MODE` | Jalankan browser tanpa UI | False | ❌ |
+| `DAEMON_MODE` | Mode daemon untuk VPS | False | ❌ |
+| `CHECK_INTERVAL` | Interval cek pesan (detik) | 300 | ❌ |
 | `IMPLICIT_WAIT` | Timeout menunggu element (detik) | 10 | ❌ |
 | `PAGE_LOAD_TIMEOUT` | Timeout loading halaman (detik) | 30 | ❌ |
 
@@ -164,9 +193,17 @@ Local/
 ├── run_proxy.py          # SOCKS5 proxy runner
 ├── test_messenger_bot.py # Messenger bot tests
 ├── test_proxy.py         # SOCKS5 proxy tests
+=======
+├── logs/                  # Log files (created automatically)
 ├── requirements.txt       # Python dependencies
 ├── package.json          # Node.js dependencies
 ├── .env.example          # Template environment variables
+├── Dockerfile            # Docker container configuration
+├── docker-compose.yml    # Docker Compose for easy deployment
+├── messenger-bot.service # Systemd service for VPS
+├── install_vps.sh        # VPS installation script
+├── health_check.py       # Health monitoring script
+├── VPS_DEPLOYMENT.md     # VPS deployment guide
 └── README.md             # Dokumentasi ini
 ```
 

@@ -6,3 +6,19 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+
+# VPS and deployment specific
+logs/
+*.pid
+*.lock
+venv/
+.venv/
+*.tar.gz
+*.backup.*
+
+# Docker
+.dockerignore
+
+# Chrome/Selenium
+.wdm/
+*.crx
